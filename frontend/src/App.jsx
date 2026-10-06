@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import CadastroPaciente from './CadastroPaciente';
+import CadastroVeiculo from './CadastroVeiculo';
 import Placeholder from './components/Placeholder';
 
 function App() {
@@ -11,7 +12,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/pacientes/cadastrar" element={<CadastroPaciente />} />
         <Route path="/pacientes/consultar" element={<Placeholder titulo="Consultar Paciente" />} />
-        <Route path="/veiculos" element={<Placeholder titulo="Veículos" />} />
+        <Route path="/veiculos" element={<CadastroVeiculo />} />
         <Route path="/viagens" element={<Placeholder titulo="Viagens" />} />
         <Route path="/fila" element={<Placeholder titulo="Fila de Espera" />} />
       </Route>
