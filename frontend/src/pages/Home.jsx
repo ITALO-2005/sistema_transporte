@@ -7,7 +7,7 @@ const acoes = [
   { to: '/pacientes/cadastrar', titulo: 'Cadastrar Paciente', desc: 'Adicionar um novo paciente à base.', Icon: FiUserPlus },
   { to: '/pacientes/consultar', titulo: 'Consultar Paciente', desc: 'Buscar pacientes já cadastrados.', Icon: FiSearch },
   { to: '/veiculos', titulo: 'Veículos', desc: 'Gerenciar a frota municipal.', Icon: FiTruck },
-  { to: '/viagens', titulo: 'Viagens', desc: 'Criar e acompanhar viagens.', Icon: FiMap },
+  { to: '/viagens', titulo: 'Agendar viagem', desc: 'Agendar e acompanhar viagens de pacientes.', Icon: FiMap },
 ];
 
 export default function Home() {
