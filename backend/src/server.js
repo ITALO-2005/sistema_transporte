@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const pacienteRoutes = require('./routes/pacienteRoutes');
+const veiculoRoutes = require('./routes/veiculoRoutes');
 
 const app = express();
 app.use(cors());
@@ -12,6 +13,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/pacientes', pacienteRoutes);
+app.use('/api/veiculos', veiculoRoutes);
 
 const PORT = process.env.PORT || 3333;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
