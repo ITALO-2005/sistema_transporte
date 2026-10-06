@@ -8,7 +8,7 @@ const menuItems = [
   { to: '/pacientes/cadastrar', label: 'Cadastrar Paciente', Icon: FiUserPlus },
   { to: '/pacientes/consultar', label: 'Consultar Paciente', Icon: FiSearch },
   { to: '/veiculos', label: 'Veículos', Icon: FiTruck },
-  { to: '/viagens', label: 'Viagens', Icon: FiMap },
+  { to: '/viagens', label: 'Agendar viagem', Icon: FiMap },
   { to: '/fila', label: 'Fila de Espera', Icon: FiClock },
 ];
 
