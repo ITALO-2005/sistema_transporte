@@ -17,3 +17,10 @@ app.use('/api/veiculos', veiculoRoutes);
 
 const PORT = process.env.PORT || 3333;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+
+const viagemRoutes = require('./routes/viagemRoutes');
+const filaEsperaRoutes = require('./routes/filaEsperaRoutes');
+
+
+app.use('/api/viagens', viagemRoutes);
+app.use('/api/fila', filaEsperaRoutes);
