@@ -5,6 +5,7 @@ import CadastroPaciente from './CadastroPaciente';
 import CadastroVeiculo from './CadastroVeiculo';
 import AgendamentoViagem from './AgendamentoViagem';
 import Placeholder from './components/Placeholder';
+import FilaEspera from './FilaEspera';
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
         <Route path="/pacientes/consultar" element={<Placeholder titulo="Consultar Paciente" />} />
         <Route path="/veiculos" element={<CadastroVeiculo />} />
         <Route path="/viagens" element={<AgendamentoViagem />} />
-        <Route path="/fila" element={<Placeholder titulo="Fila de Espera" />} />
+        <Route path="/fila" element={<FilaEspera />} />
       </Route>
     </Routes>
   );

@@ -57,21 +57,36 @@ export default function AgendamentoViagem() {
     e.preventDefault();
     setMensagem(null);
     setEnviando(true);
+
     try {
       const resposta = await axios.post('http://localhost:3333/api/viagens', {
         ...form,
         passageiros: Number(form.passageiros),
       });
-      setViagens((atuais) => [resposta.data, ...atuais]);
+
+      if (resposta.status === 202) {
+        setMensagem({
+          texto: resposta.data.mensagem,
+          tipo: 'sucesso',
+        });
+      } else {
+        setViagens((atuais) => [resposta.data, ...atuais]);
+        setMensagem({
+          texto: 'Viagem agendada com sucesso!',
+          tipo: 'sucesso',
+        });
+      }
+
       setForm(formularioInicial);
-      setMensagem({ texto: 'Viagem agendada com sucesso!', tipo: 'sucesso' });
     } catch (err) {
-      setMensagem({ texto: err.response?.data?.erro || 'Erro ao agendar viagem.', tipo: 'erro' });
+      setMensagem({
+        texto: err.response?.data?.erro || 'Erro ao agendar viagem.',
+        tipo: 'erro',
+      });
     } finally {
       setEnviando(false);
     }
   }
-
   return (
     <div>
       <PageHeader titulo="Agendar Viagem" subtitulo="Organize o transporte do paciente e acompanhe as viagens agendadas." />
