@@ -8,6 +8,7 @@ import './AgendamentoViagem.css';
 const formularioInicial = {
   pacienteId: '',
   veiculoId: '',
+  motorista: '',
   data: '',
   hora: '',
   destino: '',
@@ -122,8 +123,27 @@ export default function AgendamentoViagem() {
               </select>
             </div>
             <div>
+              <label htmlFor="motorista">Motorista responsável</label>
+              <input
+                id="motorista"
+                name="motorista"
+                type="text"
+                value={form.motorista}
+                onChange={handleChange}
+                placeholder="Nome do motorista"
+              />
+            </div>
+
+            <div>
               <label htmlFor="data">Data da viagem *</label>
-              <input id="data" name="data" type="date" value={form.data} onChange={handleChange} required />
+              <input
+                id="data"
+                name="data"
+                type="date"
+                value={form.data}
+                onChange={handleChange}
+                required
+              />
             </div>
             <div>
               <label htmlFor="hora">Horário de saída *</label>
@@ -185,6 +205,7 @@ export default function AgendamentoViagem() {
                   <th>Paciente</th>
                   <th>Destino / motivo</th>
                   <th>Veículo</th>
+                  <th>Motorista</th>
                   <th>Passageiros</th>
                 </tr>
               </thead>
@@ -195,6 +216,7 @@ export default function AgendamentoViagem() {
                     <td><strong>{viagem.pacienteNome}</strong></td>
                     <td>{viagem.destino}<small>{viagem.motivo}</small></td>
                     <td>{viagem.veiculoDescricao}</td>
+                    <td>{viagem.motorista || 'Não informado'}</td>
                     <td>{viagem.passageiros} / {viagem.capacidade} lugares</td>
                   </tr>
                 ))}
