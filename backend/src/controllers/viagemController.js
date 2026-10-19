@@ -28,6 +28,10 @@ exports.agendar = (req, res) => {
   const veiculoId = Number(req.body.veiculoId);
   const passageiros = Number(req.body.passageiros);
   const { data, hora, destino, motivo } = req.body;
+  const motorista =
+  typeof req.body.motorista === 'string'
+    ? req.body.motorista.trim()
+    : '';
 
   if (
     !Number.isInteger(pacienteId) ||
@@ -98,6 +102,7 @@ exports.agendar = (req, res) => {
     destino: destino.trim(),
     motivo: motivo.trim(),
     passageiros,
+    motorista,
   });
 
   return res.status(201).json(formatarViagem(viagem));
