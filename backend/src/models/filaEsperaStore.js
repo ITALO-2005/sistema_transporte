@@ -7,6 +7,10 @@ function listar() {
   );
 }
 
+/**
+ * Retorna a fila por ordem de entrada (FIFO):
+ * a solicitação mais antiga aparece primeiro.
+ */
 function adicionar(dados) {
   const solicitacao = {
     id: proximoId++,

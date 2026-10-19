@@ -10,6 +10,23 @@ function formatarDataHora(data, hora) {
   const [ano, mes, dia] = data.split('-');
   return `${dia}/${mes}/${ano} às ${hora}`;
 }
+/**
+ * Formata a data e a hora em que o pedido entrou na fila.
+ * O backend envia dataEntrada como uma data ISO.
+ */
+
+function formatarDataSolicitacao(dataEntrada) {
+  if (!dataEntrada) return '—';
+
+  const data = new Date(dataEntrada);
+  if (Number.isNaN(data.getTime())) return '—';
+
+  return data.toLocaleString('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  });
+}
+
 
 export default function FilaEspera() {
   const [fila, setFila] = useState([]);
@@ -80,6 +97,8 @@ export default function FilaEspera() {
               <thead>
                 <tr>
                   <th>Ordem</th>
+                  <th>Solicitada em</th>
+                  <th>Data e horário pedidos</th>
                   <th>Data e horário pedidos</th>
                   <th>Paciente</th>
                   <th>Destino / motivo</th>
@@ -92,6 +111,8 @@ export default function FilaEspera() {
                 {fila.map((item, indice) => (
                   <tr key={item.id}>
                     <td className="fila-position">{indice + 1}º</td>
+                    <td>{formatarDataHora(item.data, item.hora)}</td>
+                    <td>{formatarDataSolicitacao(item.dataEntrada)}</td>
                     <td>{formatarDataHora(item.data, item.hora)}</td>
                     <td><strong>{item.pacienteNome}</strong></td>
                     <td>{item.destino}<small>{item.motivo}</small></td>
