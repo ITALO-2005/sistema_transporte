@@ -1,13 +1,16 @@
 import { Link } from 'react-router-dom';
-import { FiUserPlus, FiSearch, FiTruck, FiMap, FiArrowRight } from 'react-icons/fi';
+import { FiUserPlus, FiSearch, FiTruck, FiMap, FiArrowRight, FiClock } from 'react-icons/fi';
 import PageHeader from '../components/PageHeader';
 import './Home.css';
+
 
 const acoes = [
   { to: '/pacientes/cadastrar', titulo: 'Cadastrar Paciente', desc: 'Adicionar um novo paciente à base.', Icon: FiUserPlus },
   { to: '/pacientes/consultar', titulo: 'Consultar Paciente', desc: 'Buscar pacientes já cadastrados.', Icon: FiSearch },
   { to: '/veiculos', titulo: 'Veículos', desc: 'Gerenciar a frota municipal.', Icon: FiTruck },
   { to: '/viagens', titulo: 'Agendar viagem', desc: 'Agendar e acompanhar viagens de pacientes.', Icon: FiMap },
+  // Atalho para consultar solicitações que aguardam vaga.
+  { to: '/fila', titulo: 'Fila de Espera', desc: 'Consultar solicitações aguardando vaga.', Icon: FiClock },
 ];
 
 export default function Home() {
