@@ -7,6 +7,7 @@ import HistoricoPaciente from './HistoricoPaciente';
 import CadastroVeiculo from './CadastroVeiculo';
 import AgendamentoViagem from './AgendamentoViagem';
 import FilaEspera from './FilaEspera';
+import ListaEmbarque from './ListaEmbarque';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/veiculos" element={<CadastroVeiculo />} />
         <Route path="/viagens" element={<AgendamentoViagem />} />
         <Route path="/fila" element={<FilaEspera />} />
+        <Route path="/embarque" element={<ListaEmbarque />} />
       </Route>
     </Routes>
   );
