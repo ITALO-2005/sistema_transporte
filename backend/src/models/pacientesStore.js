@@ -4,8 +4,31 @@
 let pacientes = [];
 let proximoId = 1;
 
+function normalizar(texto) {
+  return String(texto || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function somenteDigitos(texto) {
+  return String(texto || '').replace(/\D/g, '');
+}
+
 function listar() {
   return pacientes;
+}
+
+function buscar(termo) {
+  const t = normalizar(termo);
+  const digitos = somenteDigitos(termo);
+
+  return pacientes.filter((p) => {
+    const porNome = normalizar(p.nome).includes(t);
+    const porCns = digitos && somenteDigitos(p.cns).includes(digitos);
+    const porCpf = digitos && somenteDigitos(p.cpf).includes(digitos);
+    return porNome || porCns || porCpf;
+  });
 }
 
 function buscarPorId(id) {
@@ -26,4 +49,4 @@ function criar(dados) {
   return paciente;
 }
 
-module.exports = { listar, buscarPorId, buscarPorCns, criar };
+module.exports = { listar, buscar, buscarPorId, buscarPorCns, criar };
