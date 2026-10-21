@@ -2,6 +2,12 @@ const viagensStore = require('../models/viagensStore');
 const filaEsperaStore = require('../models/filaEsperaStore');
 const pacientesStore = require('../models/pacientesStore');
 const veiculosStore = require('../models/veiculosStore');
+const historicoStore = require('../models/historicoStore');
+
+function formatarData(data) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(data));
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(data);
+}
 
 function formatarViagem(viagem) {
   const paciente = pacientesStore.buscarPorId(viagem.pacienteId);
@@ -87,6 +93,12 @@ exports.agendar = (req, res) => {
       passageiros,
     });
 
+    historicoStore.registrar({
+      pacienteId,
+      tipo: 'agendamento',
+      descricao: `Solicitação de viagem para ${destino.trim()} em ${formatarData(data)} às ${hora} enviada à fila de espera`,
+    });
+
     return res.status(202).json({
       status: 'fila_espera',
       mensagem: 'Não há vagas disponíveis. A solicitação foi enviada à fila de espera.',
@@ -103,6 +115,12 @@ exports.agendar = (req, res) => {
     motivo: motivo.trim(),
     passageiros,
     motorista,
+  });
+
+  historicoStore.registrar({
+    pacienteId,
+    tipo: 'viagem',
+    descricao: `Viagem agendada para ${destino.trim()} em ${formatarData(data)} às ${hora}. Motivo: ${motivo.trim()}`,
   });
 
   return res.status(201).json(formatarViagem(viagem));
