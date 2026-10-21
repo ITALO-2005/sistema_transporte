@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { FiHome, FiUserPlus, FiSearch, FiTruck, FiMap, FiClock, FiList, } from 'react-icons/fi';
+import { FiHome, FiUserPlus, FiSearch, FiTruck, FiMap, FiClock, FiList, FiActivity } from 'react-icons/fi';
 import logoPrefeitura from '../assets/logo-prefeitura.png';
 import './Layout.css';
 
@@ -11,6 +11,7 @@ const menuItems = [
   { to: '/viagens', label: 'Agendar viagem', Icon: FiMap },
   { to: '/fila', label: 'Fila de Espera', Icon: FiClock },
   { to: '/embarque', label: 'Lista de Embarque', Icon: FiList },
+  { to: '/quilometragem', label: 'Quilometragem', Icon: FiActivity },
 ];
 
 export default function Layout() {
