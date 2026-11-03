@@ -94,3 +94,59 @@
   margin: 0;
   font-size: 14px;
 }
+
+/* ---- status e ações das viagens ---- */
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-agendada { background: #e8eef0; color: #3c4f57; }
+.status-andamento { background: #fdf0d9; color: #8a5a00; }
+.status-concluida { background: #e3f6f1; color: #0e7a6b; }
+.status-cancelada { background: #fbe9e9; color: #b3261e; }
+
+.viagem-cancelada td { opacity: 0.6; }
+.viagem-cancelada td:nth-child(7),
+.viagem-cancelada td:nth-child(8) { opacity: 1; }
+
+.viagem-acoes {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.viagem-acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--color-primary);
+  background: #eaf3f3;
+  border: 1px solid #cfe3e3;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.viagem-acao:hover { background: #dcecec; }
+
+.viagem-acao.perigo {
+  color: #b3261e;
+  background: #fbe9e9;
+  border-color: #f2cccc;
+}
+
+.viagem-acao.perigo:hover { background: #f6d9d9; }
+
+.viagem-acao:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.viagem-sem-acao { color: var(--color-text-muted); }
+
+.viagem-alerta-tabela { margin-bottom: 14px; }

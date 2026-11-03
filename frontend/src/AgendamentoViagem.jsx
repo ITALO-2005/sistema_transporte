@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FiAlertCircle, FiCheckCircle, FiMap } from 'react-icons/fi';
+import { FiAlertCircle, FiCheck, FiCheckCircle, FiMap, FiPlay, FiXCircle } from 'react-icons/fi';
 import PageHeader from './components/PageHeader';
 import './CadastroPaciente.css';
 import './AgendamentoViagem.css';
@@ -16,14 +16,23 @@ const formularioInicial = {
   passageiros: '1',
 };
 
+const CLASSE_STATUS = {
+  Agendada: 'agendada',
+  'Em andamento': 'andamento',
+  Concluída: 'concluida',
+  Cancelada: 'cancelada',
+};
+
 export default function AgendamentoViagem() {
   const [form, setForm] = useState(formularioInicial);
   const [pacientes, setPacientes] = useState([]);
   const [veiculos, setVeiculos] = useState([]);
   const [viagens, setViagens] = useState([]);
   const [mensagem, setMensagem] = useState(null);
+  const [mensagemTabela, setMensagemTabela] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
+  const [atualizandoId, setAtualizandoId] = useState(null);
 
   async function carregarDados() {
     setCarregando(true);
@@ -88,6 +97,45 @@ export default function AgendamentoViagem() {
       setEnviando(false);
     }
   }
+
+  // Iniciar saída, concluir ou cancelar uma viagem
+  async function alterarStatus(viagem, status) {
+    if (status === 'Cancelada') {
+      const confirmou = window.confirm(
+        `Cancelar o agendamento de ${viagem.pacienteNome}? As vagas serão liberadas.`,
+      );
+      if (!confirmou) return;
+    }
+
+    setMensagemTabela(null);
+    setAtualizandoId(viagem.id);
+
+    try {
+      const resposta = await axios.patch(`http://localhost:3333/api/viagens/${viagem.id}/status`, { status });
+      const oferta = resposta.data.filaOferta;
+
+      let texto = {
+        'Em andamento': 'Saída iniciada.',
+        Concluída: 'Viagem concluída.',
+        Cancelada: 'Agendamento cancelado e vagas liberadas.',
+      }[status];
+
+      if (oferta) {
+        texto += ` ${oferta.pacienteNome} é o próximo da fila de espera e já pode ser agendado(a): abra a Fila de Espera.`;
+      }
+
+      setMensagemTabela({ texto, tipo: 'sucesso' });
+      await carregarDados();
+    } catch (err) {
+      setMensagemTabela({
+        texto: err.response?.data?.erro || 'Erro ao atualizar o status da viagem.',
+        tipo: 'erro',
+      });
+    } finally {
+      setAtualizandoId(null);
+    }
+  }
+
   return (
     <div>
       <PageHeader titulo="Agendar Viagem" subtitulo="Organize o transporte do paciente e acompanhe as viagens agendadas." />
@@ -194,6 +242,14 @@ export default function AgendamentoViagem() {
           <h3 id="viagens-titulo">Viagens agendadas</h3>
           <span>{viagens.length} {viagens.length === 1 ? 'viagem' : 'viagens'}</span>
         </div>
+
+        {mensagemTabela && (
+          <div className={`alert ${mensagemTabela.tipo} viagem-alerta-tabela`} role="status">
+            {mensagemTabela.tipo === 'sucesso' ? <FiCheckCircle /> : <FiAlertCircle />}
+            {mensagemTabela.texto}
+          </div>
+        )}
+
         {carregando ? (
           <p className="viagens-empty">Carregando agendamentos...</p>
         ) : viagens.length ? (
@@ -207,17 +263,61 @@ export default function AgendamentoViagem() {
                   <th>Veículo</th>
                   <th>Motorista</th>
                   <th>Passageiros</th>
+                  <th>Status</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {viagens.map((viagem) => (
-                  <tr key={viagem.id}>
+                  <tr key={viagem.id} className={viagem.status === 'Cancelada' ? 'viagem-cancelada' : ''}>
                     <td>{new Date(`${viagem.data}T${viagem.hora}`).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</td>
                     <td><strong>{viagem.pacienteNome}</strong></td>
                     <td>{viagem.destino}<small>{viagem.motivo}</small></td>
                     <td>{viagem.veiculoDescricao}</td>
                     <td>{viagem.motorista || 'Não informado'}</td>
                     <td>{viagem.passageiros} / {viagem.capacidade} lugares</td>
+                    <td>
+                      <span className={`status-badge status-${CLASSE_STATUS[viagem.status] || 'agendada'}`}>
+                        {viagem.status || 'Agendada'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="viagem-acoes">
+                        {viagem.status === 'Agendada' && (
+                          <>
+                            <button
+                              type="button"
+                              className="viagem-acao"
+                              onClick={() => alterarStatus(viagem, 'Em andamento')}
+                              disabled={atualizandoId === viagem.id}
+                            >
+                              <FiPlay /> Iniciar
+                            </button>
+                            <button
+                              type="button"
+                              className="viagem-acao perigo"
+                              onClick={() => alterarStatus(viagem, 'Cancelada')}
+                              disabled={atualizandoId === viagem.id}
+                            >
+                              <FiXCircle /> Cancelar
+                            </button>
+                          </>
+                        )}
+                        {viagem.status === 'Em andamento' && (
+                          <button
+                            type="button"
+                            className="viagem-acao"
+                            onClick={() => alterarStatus(viagem, 'Concluída')}
+                            disabled={atualizandoId === viagem.id}
+                          >
+                            <FiCheck /> Concluir
+                          </button>
+                        )}
+                        {(viagem.status === 'Concluída' || viagem.status === 'Cancelada') && (
+                          <span className="viagem-sem-acao">—</span>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

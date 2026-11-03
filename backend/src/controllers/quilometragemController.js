@@ -38,6 +38,7 @@ function montarItem(viagem) {
 exports.listar = (_req, res) => {
   const itens = viagensStore
     .listar()
+    .filter((viagem) => viagem.status !== 'Cancelada')
     .map(montarItem)
     .sort((a, b) => `${a.data} ${a.hora}`.localeCompare(`${b.data} ${b.hora}`));
 
@@ -59,6 +60,10 @@ exports.registrarInicial = (req, res) => {
   const viagem = viagensStore.listar().find((v) => Number(v.id) === viagemId);
   if (!viagem) {
     return res.status(404).json({ erro: 'Viagem não encontrada.' });
+  }
+
+  if (viagem.status === 'Cancelada') {
+    return res.status(409).json({ erro: 'Esta viagem foi cancelada.' });
   }
 
   if (registrosViagemStore.buscarPorSaida(viagem)) {
@@ -92,6 +97,10 @@ exports.registrarFinal = (req, res) => {
   const viagem = viagensStore.listar().find((v) => Number(v.id) === viagemId);
   if (!viagem) {
     return res.status(404).json({ erro: 'Viagem não encontrada.' });
+  }
+
+  if (viagem.status === 'Cancelada') {
+    return res.status(409).json({ erro: 'Esta viagem foi cancelada.' });
   }
 
   const registro = registrosViagemStore.buscarPorSaida(viagem);

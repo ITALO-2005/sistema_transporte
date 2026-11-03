@@ -23,7 +23,7 @@ export default function ListaEmbarque() {
   useEffect(() => {
     axios
       .get('http://localhost:3333/api/viagens')
-      .then((resposta) => setViagens(resposta.data))
+      .then((resposta) => setViagens(resposta.data.filter((viagem) => viagem.status !== 'Cancelada')))
       .catch(() => setErro('Não foi possível carregar as viagens.'))
       .finally(() => setCarregando(false));
   }, []);

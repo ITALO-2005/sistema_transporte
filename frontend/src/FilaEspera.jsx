@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FiAlertCircle, FiCheckCircle, FiClock, FiTrash2 } from 'react-icons/fi';
+import { FiAlertCircle, FiCheckCircle, FiClock, FiTrash2, FiUserCheck } from 'react-icons/fi';
 import PageHeader from './components/PageHeader';
 import './FilaEspera.css';
 
@@ -33,6 +33,7 @@ export default function FilaEspera() {
   const [mensagem, setMensagem] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [removendoId, setRemovendoId] = useState(null);
+  const [agendandoId, setAgendandoId] = useState(null);
 
   async function carregarFila() {
     setCarregando(true);
@@ -57,8 +58,8 @@ export default function FilaEspera() {
 
     try {
       await axios.delete(`${API}/fila/${id}`);
-      setFila((atual) => atual.filter((item) => item.id !== id));
       setMensagem({ texto: 'Solicitação retirada da fila.', tipo: 'sucesso' });
+      await carregarFila();
     } catch (err) {
       setMensagem({
         texto: err.response?.data?.erro || 'Erro ao retirar solicitação da fila.',
@@ -66,6 +67,25 @@ export default function FilaEspera() {
       });
     } finally {
       setRemovendoId(null);
+    }
+  }
+
+  // Passa a solicitação da fila para uma viagem agendada (quando há vaga)
+  async function agendarDaFila(id) {
+    setMensagem(null);
+    setAgendandoId(id);
+
+    try {
+      const resposta = await axios.post(`${API}/fila/${id}/agendar`);
+      setMensagem({ texto: resposta.data.mensagem, tipo: 'sucesso' });
+      await carregarFila();
+    } catch (err) {
+      setMensagem({
+        texto: err.response?.data?.erro || 'Erro ao agendar a solicitação.',
+        tipo: 'erro',
+      });
+    } finally {
+      setAgendandoId(null);
     }
   }
 
@@ -97,13 +117,12 @@ export default function FilaEspera() {
               <thead>
                 <tr>
                   <th>Ordem</th>
-                  <th>Solicitada em</th>
-                  <th>Data e horário pedidos</th>
-                  <th>Data e horário pedidos</th>
                   <th>Paciente</th>
+                  <th>Data e horário pedidos</th>
                   <th>Destino / motivo</th>
                   <th>Veículo</th>
                   <th>Passageiros</th>
+                  <th>Situação</th>
                   <th>Ação</th>
                 </tr>
               </thead>
@@ -111,23 +130,42 @@ export default function FilaEspera() {
                 {fila.map((item, indice) => (
                   <tr key={item.id}>
                     <td className="fila-position">{indice + 1}º</td>
+                    <td><strong>{item.pacienteNome}</strong><small>Solicitada em {formatarDataSolicitacao(item.dataEntrada)}</small></td>
                     <td>{formatarDataHora(item.data, item.hora)}</td>
-                    <td>{formatarDataSolicitacao(item.dataEntrada)}</td>
-                    <td>{formatarDataHora(item.data, item.hora)}</td>
-                    <td><strong>{item.pacienteNome}</strong></td>
                     <td>{item.destino}<small>{item.motivo}</small></td>
                     <td>{item.veiculoDescricao}</td>
                     <td>{item.passageiros} / {item.capacidade}</td>
                     <td>
-                      <button
-                        type="button"
-                        className="fila-remove-button"
-                        onClick={() => retirarDaFila(item.id)}
-                        disabled={removendoId === item.id}
-                      >
-                        <FiTrash2 />
-                        {removendoId === item.id ? 'Retirando...' : 'Retirar'}
-                      </button>
+                      {item.podeAgendar ? (
+                        <span className="fila-badge disponivel">Vaga disponível</span>
+                      ) : (
+                        <span className="fila-badge aguardando">Aguardando</span>
+                      )}
+                      <small>{item.vagasLivres} vaga(s) livre(s)</small>
+                    </td>
+                    <td>
+                      <div className="fila-acoes">
+                        {item.podeAgendar && (
+                          <button
+                            type="button"
+                            className="fila-agendar-button"
+                            onClick={() => agendarDaFila(item.id)}
+                            disabled={agendandoId === item.id}
+                          >
+                            <FiUserCheck />
+                            {agendandoId === item.id ? 'Agendando...' : 'Agendar'}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="fila-remove-button"
+                          onClick={() => retirarDaFila(item.id)}
+                          disabled={removendoId === item.id}
+                        >
+                          <FiTrash2 />
+                          {removendoId === item.id ? 'Retirando...' : 'Retirar'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
