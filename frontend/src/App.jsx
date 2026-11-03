@@ -9,6 +9,7 @@ import AgendamentoViagem from './AgendamentoViagem';
 import FilaEspera from './FilaEspera';
 import ListaEmbarque from './ListaEmbarque';
 import QuilometragemViagem from './QuilometragemViagem';
+import Abastecimento from './Abastecimento';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/fila" element={<FilaEspera />} />
         <Route path="/embarque" element={<ListaEmbarque />} />
         <Route path="/quilometragem" element={<QuilometragemViagem />} />
+        <Route path="/abastecimento" element={<Abastecimento />} />
       </Route>
     </Routes>
   );
