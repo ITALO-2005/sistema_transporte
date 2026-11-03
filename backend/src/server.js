@@ -6,6 +6,7 @@ const veiculoRoutes = require('./routes/veiculoRoutes');
 const viagemRoutes = require('./routes/viagemRoutes');
 const filaEsperaRoutes = require('./routes/filaEsperaRoutes');
 const quilometragemRoutes = require('./routes/quilometragemRoutes');
+const abastecimentoRoutes = require('./routes/abastecimentoRoutes');
 
 const app = express();
 app.use(cors());
@@ -20,6 +21,7 @@ app.use('/api/veiculos', veiculoRoutes);
 app.use('/api/viagens', viagemRoutes);
 app.use('/api/fila', filaEsperaRoutes);
 app.use('/api/quilometragem', quilometragemRoutes);
+app.use('/api/abastecimentos', abastecimentoRoutes);
 
 const PORT = process.env.PORT || 3333;
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
