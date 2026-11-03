@@ -88,3 +88,15 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.km-nota {
+  margin: 0 0 16px 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.km-aguardando {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}

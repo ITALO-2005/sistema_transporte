@@ -3,10 +3,20 @@ const pacientesStore = require('../models/pacientesStore');
 const veiculosStore = require('../models/veiculosStore');
 const registrosViagemStore = require('../models/registrosViagemStore');
 
+// Converte o valor recebido em inteiro >= 0; devolve null se for inválido
+function lerKm(bruto) {
+  if (bruto === undefined || bruto === null || String(bruto).trim() === '') return null;
+  const km = Number(bruto);
+  return Number.isInteger(km) && km >= 0 ? km : null;
+}
+
 function montarItem(viagem) {
   const paciente = pacientesStore.buscarPorId(viagem.pacienteId);
   const veiculo = veiculosStore.listar().find((v) => v.id === viagem.veiculoId);
-  const registro = registrosViagemStore.buscarPorViagem(viagem.id);
+  const registro = registrosViagemStore.buscarPorSaida(viagem);
+
+  const kmInicial = registro ? registro.kmInicial : null;
+  const kmFinal = registro ? registro.kmFinal : null;
 
   return {
     viagemId: viagem.id,
@@ -18,8 +28,9 @@ function montarItem(viagem) {
     veiculoDescricao: veiculo
       ? `${veiculo.marca} ${veiculo.modelo} — ${veiculo.placa}`
       : 'Veículo não encontrado',
-    kmInicial: registro ? registro.kmInicial : null,
-    kmInicialRegistradoEm: registro ? registro.kmInicialRegistradoEm : null,
+    kmInicial,
+    kmFinal,
+    kmPercorrido: kmInicial !== null && kmFinal !== null ? kmFinal - kmInicial : null,
   };
 }
 
@@ -34,18 +45,12 @@ exports.listar = (_req, res) => {
 };
 
 // POST /api/quilometragem/:viagemId/inicial  { kmInicial }
+// O valor vale para a saída inteira (mesmo veículo, data e horário).
 exports.registrarInicial = (req, res) => {
   const viagemId = Number(req.params.viagemId);
-  const bruto = req.body.kmInicial;
-  const kmInicial = Number(bruto);
+  const kmInicial = lerKm(req.body.kmInicial);
 
-  if (
-    bruto === undefined ||
-    bruto === null ||
-    String(bruto).trim() === '' ||
-    !Number.isInteger(kmInicial) ||
-    kmInicial < 0
-  ) {
+  if (kmInicial === null) {
     return res.status(400).json({
       erro: 'Informe a quilometragem inicial como número inteiro, maior ou igual a zero.',
     });
@@ -56,22 +61,55 @@ exports.registrarInicial = (req, res) => {
     return res.status(404).json({ erro: 'Viagem não encontrada.' });
   }
 
-  if (registrosViagemStore.buscarPorViagem(viagem.id)) {
-    return res.status(409).json({ erro: 'A quilometragem inicial desta viagem já foi registrada.' });
+  if (registrosViagemStore.buscarPorSaida(viagem)) {
+    return res.status(409).json({ erro: 'A quilometragem inicial desta saída já foi registrada.' });
   }
 
-  const maiorLeitura = registrosViagemStore.maiorLeituraDoVeiculo(viagem.veiculoId);
+  const maiorLeitura = registrosViagemStore.maiorLeituraDoVeiculo(viagem.veiculoId, viagem);
   if (maiorLeitura !== null && kmInicial < maiorLeitura) {
     return res.status(400).json({
       erro: `A quilometragem não pode ser menor que a última registrada para este veículo (${maiorLeitura} km).`,
     });
   }
 
-  registrosViagemStore.registrarKmInicial({
-    viagemId: viagem.id,
-    veiculoId: viagem.veiculoId,
-    kmInicial,
-  });
+  registrosViagemStore.registrarKmInicial(viagem, kmInicial);
+
+  return res.status(201).json(montarItem(viagem));
+};
+
+// POST /api/quilometragem/:viagemId/final  { kmFinal }
+// Só depois do km inicial, e nunca menor que ele.
+exports.registrarFinal = (req, res) => {
+  const viagemId = Number(req.params.viagemId);
+  const kmFinal = lerKm(req.body.kmFinal);
+
+  if (kmFinal === null) {
+    return res.status(400).json({
+      erro: 'Informe a quilometragem final como número inteiro, maior ou igual a zero.',
+    });
+  }
+
+  const viagem = viagensStore.listar().find((v) => Number(v.id) === viagemId);
+  if (!viagem) {
+    return res.status(404).json({ erro: 'Viagem não encontrada.' });
+  }
+
+  const registro = registrosViagemStore.buscarPorSaida(viagem);
+  if (!registro) {
+    return res.status(409).json({ erro: 'Registre antes a quilometragem inicial desta saída.' });
+  }
+
+  if (registro.kmFinal !== null) {
+    return res.status(409).json({ erro: 'A quilometragem final desta saída já foi registrada.' });
+  }
+
+  if (kmFinal < registro.kmInicial) {
+    return res.status(400).json({
+      erro: `A quilometragem final não pode ser menor que a inicial (${registro.kmInicial} km).`,
+    });
+  }
+
+  registrosViagemStore.registrarKmFinal(viagem, kmFinal);
 
   return res.status(201).json(montarItem(viagem));
 };

@@ -19,7 +19,7 @@ export default function QuilometragemViagem() {
   const [valores, setValores] = useState({});
   const [mensagem, setMensagem] = useState(null);
   const [carregando, setCarregando] = useState(true);
-  const [salvandoId, setSalvandoId] = useState(null);
+  const [salvando, setSalvando] = useState(null);
 
   async function carregar() {
     try {
@@ -39,15 +39,23 @@ export default function QuilometragemViagem() {
     carregar();
   }, []);
 
-  async function registrar(viagemId) {
+  function alterarValor(chave, valor) {
+    setValores((atual) => ({ ...atual, [chave]: valor }));
+  }
+
+  // tipo: 'inicial' ou 'final'
+  async function registrar(viagemId, tipo) {
+    const chave = `${tipo}-${viagemId}`;
     setMensagem(null);
-    setSalvandoId(viagemId);
+    setSalvando(chave);
     try {
-      await axios.post(`http://localhost:3333/api/quilometragem/${viagemId}/inicial`, {
-        kmInicial: valores[viagemId],
+      const corpo = tipo === 'inicial' ? { kmInicial: valores[chave] } : { kmFinal: valores[chave] };
+      await axios.post(`http://localhost:3333/api/quilometragem/${viagemId}/${tipo}`, corpo);
+      alterarValor(chave, '');
+      setMensagem({
+        tipo: 'sucesso',
+        texto: tipo === 'inicial' ? 'Quilometragem inicial registrada.' : 'Quilometragem final registrada.',
       });
-      setValores((atual) => ({ ...atual, [viagemId]: '' }));
-      setMensagem({ tipo: 'sucesso', texto: 'Quilometragem inicial registrada.' });
       await carregar();
     } catch (err) {
       setMensagem({
@@ -55,18 +63,46 @@ export default function QuilometragemViagem() {
         texto: err.response?.data?.erro || 'Erro ao registrar a quilometragem.',
       });
     } finally {
-      setSalvandoId(null);
+      setSalvando(null);
     }
+  }
+
+  function campoKm(v, tipo) {
+    const chave = `${tipo}-${v.viagemId}`;
+    return (
+      <div className="km-form">
+        <input
+          type="number"
+          min={tipo === 'final' ? v.kmInicial : 0}
+          step="1"
+          placeholder={tipo === 'inicial' ? 'Ex.: 45230' : `Mín.: ${v.kmInicial}`}
+          value={valores[chave] ?? ''}
+          onChange={(e) => alterarValor(chave, e.target.value)}
+        />
+        <button
+          type="button"
+          disabled={!valores[chave] || salvando === chave}
+          onClick={() => registrar(v.viagemId, tipo)}
+        >
+          {salvando === chave ? 'Salvando...' : 'Registrar'}
+        </button>
+      </div>
+    );
   }
 
   return (
     <div>
       <PageHeader
         titulo="Quilometragem da Viagem"
-        subtitulo="Registre a quilometragem inicial do veículo antes da saída."
+        subtitulo="Registre a quilometragem inicial antes da saída e a final na volta."
       />
 
       <div className="km-card">
+        <p className="km-nota">
+          A quilometragem vale para a saída inteira: ao registrar em um paciente, os demais da mesma
+          saída (mesmo veículo, data e horário) recebem o mesmo valor.
+        </p>
+
         {mensagem && (
           <div className={`km-alerta ${mensagem.tipo}`}>
             {mensagem.tipo === 'sucesso' ? <FiCheckCircle /> : <FiAlertCircle />}
@@ -91,6 +127,7 @@ export default function QuilometragemViagem() {
                   <th>Destino</th>
                   <th>Motorista</th>
                   <th>Km inicial</th>
+                  <th>Km final</th>
                 </tr>
               </thead>
               <tbody>
@@ -110,25 +147,21 @@ export default function QuilometragemViagem() {
                           <FiCheckCircle /> {formatarKm(v.kmInicial)}
                         </span>
                       ) : (
-                        <div className="km-form">
-                          <input
-                            type="number"
-                            min="0"
-                            step="1"
-                            placeholder="Ex.: 45230"
-                            value={valores[v.viagemId] ?? ''}
-                            onChange={(e) =>
-                              setValores((atual) => ({ ...atual, [v.viagemId]: e.target.value }))
-                            }
-                          />
-                          <button
-                            type="button"
-                            disabled={!valores[v.viagemId] || salvandoId === v.viagemId}
-                            onClick={() => registrar(v.viagemId)}
-                          >
-                            {salvandoId === v.viagemId ? 'Salvando...' : 'Registrar'}
-                          </button>
+                        campoKm(v, 'inicial')
+                      )}
+                    </td>
+                    <td>
+                      {v.kmFinal !== null ? (
+                        <div>
+                          <span className="km-registrado">
+                            <FiCheckCircle /> {formatarKm(v.kmFinal)}
+                          </span>
+                          <small>{formatarKm(v.kmPercorrido)} percorridos</small>
                         </div>
+                      ) : v.kmInicial === null ? (
+                        <span className="km-aguardando">Registre o km inicial</span>
+                      ) : (
+                        campoKm(v, 'final')
                       )}
                     </td>
                   </tr>
