@@ -33,7 +33,7 @@ function montarItem(a) {
 exports.saidas = (_req, res) => {
   const grupos = new Map();
 
-  viagensStore.listar().forEach((viagem) => {
+  viagensStore.listar().filter((viagem) => viagem.status !== 'Cancelada').forEach((viagem) => {
     const chave = `${viagem.veiculoId}|${viagem.data}|${viagem.hora}`;
     if (!grupos.has(chave)) {
       grupos.set(chave, {
@@ -70,6 +70,10 @@ exports.registrar = (req, res) => {
   const viagem = viagensStore.listar().find((v) => Number(v.id) === viagemId);
   if (!viagem) {
     return res.status(404).json({ erro: 'Selecione uma saída válida.' });
+  }
+
+  if (viagem.status === 'Cancelada') {
+    return res.status(409).json({ erro: 'Esta viagem foi cancelada.' });
   }
 
   if (!COMBUSTIVEIS.includes(combustivel)) {

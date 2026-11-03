@@ -3,6 +3,16 @@ const filaEsperaStore = require('../models/filaEsperaStore');
 const pacientesStore = require('../models/pacientesStore');
 const veiculosStore = require('../models/veiculosStore');
 const historicoStore = require('../models/historicoStore');
+const filaService = require('../services/filaService');
+
+const STATUS = ['Agendada', 'Em andamento', 'Concluída', 'Cancelada'];
+const TRANSICOES = {
+  Agendada: ['Em andamento', 'Cancelada'],
+  'Em andamento': ['Concluída'],
+  Concluída: [],
+  Cancelada: [],
+};
+const DESCRICAO = { 'Em andamento': 'iniciada', Concluída: 'concluída', Cancelada: 'cancelada' };
 
 function formatarData(data) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(data));
@@ -91,6 +101,7 @@ exports.agendar = (req, res) => {
       destino: destino.trim(),
       motivo: motivo.trim(),
       passageiros,
+      motorista,
     });
 
     historicoStore.registrar({
@@ -124,4 +135,56 @@ exports.agendar = (req, res) => {
   });
 
   return res.status(201).json(formatarViagem(viagem));
+};
+
+// PATCH /api/viagens/:id/status  { status }
+// Iniciar e concluir valem para a saída inteira; cancelar vale só para o paciente da viagem.
+exports.atualizarStatus = (req, res) => {
+  const viagemId = Number(req.params.id);
+  const { status } = req.body;
+
+  if (!STATUS.includes(status)) {
+    return res.status(400).json({ erro: 'Status inválido.' });
+  }
+
+  const viagem = viagensStore.buscarPorId(viagemId);
+  if (!viagem) {
+    return res.status(404).json({ erro: 'Viagem não encontrada.' });
+  }
+
+  if (!TRANSICOES[viagem.status].includes(status)) {
+    return res.status(409).json({
+      erro: `Não é possível mudar a viagem de “${viagem.status}” para “${status}”.`,
+    });
+  }
+
+  const alvo =
+    status === 'Cancelada'
+      ? [viagem]
+      : viagensStore.daSaida(viagem).filter((item) => item.status === viagem.status);
+
+  alvo.forEach((item) => {
+    viagensStore.atualizarStatus(item, status);
+    historicoStore.registrar({
+      pacienteId: item.pacienteId,
+      tipo: 'viagem',
+      descricao: `Viagem para ${item.destino} em ${formatarData(item.data)} às ${item.hora} ${DESCRICAO[status]}`,
+    });
+  });
+
+  // Ao cancelar, vê se alguém da fila de espera já pode ocupar a vaga liberada
+  let filaOferta = null;
+  if (status === 'Cancelada') {
+    const proxima = filaService.proximaElegivel(viagem.veiculoId, viagem.data, viagem.hora);
+    if (proxima) {
+      filaOferta = {
+        solicitacaoId: proxima.id,
+        pacienteNome: pacientesStore.buscarPorId(proxima.pacienteId)?.nome || 'Paciente',
+        passageiros: proxima.passageiros,
+        vagasLivres: filaService.vagasDisponiveis(viagem.veiculoId, viagem.data, viagem.hora),
+      };
+    }
+  }
+
+  return res.json({ atualizadas: alvo.map(formatarViagem), filaOferta });
 };

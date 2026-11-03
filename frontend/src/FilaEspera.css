@@ -233,3 +233,39 @@
   margin: 0;
   font-size: 14px;
 }
+/* ---- vaga disponível e agendamento direto da fila ---- */
+.fila-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.fila-badge.disponivel { background: #e3f6f1; color: #0e7a6b; }
+.fila-badge.aguardando { background: #e8eef0; color: #3c4f57; }
+
+.fila-acoes {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.fila-agendar-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #ffffff;
+  background: var(--color-accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.fila-agendar-button:hover { background: #0b8c88; }
+.fila-agendar-button:disabled { opacity: 0.5; cursor: not-allowed; }
