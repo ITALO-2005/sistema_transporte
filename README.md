@@ -2,7 +2,7 @@
 
 Sistema web para organizar o transporte de pacientes da Secretaria de Transportes de Frei Martinho/PB: cadastro de pacientes e veículos, agendamento com validação de capacidade, fila de espera, viagens com lista de embarque e registros de quilometragem e abastecimento.
 
-Projeto da disciplina de Gerência de Projetos de Software (IFPB Campus Picuí).
+Projeto das disciplinas de Gerência de Projetos de Software e Desenvolvimento e Execução de Projeto de Software (IFPB Campus Picuí).
 Equipe: Ítalo Dantas Santos, Josivaldo Emerson Alves e Paulo Vitor Silva Hermogens.
 
 ## Como rodar com Docker (recomendado)
